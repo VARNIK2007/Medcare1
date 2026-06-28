@@ -1,0 +1,42 @@
+[
+    {
+        "name":"Paracetamol",
+        "uses":"Treats fever, headache and body pain.",
+        "dosage":"500 mg every 6-8 hours.",
+        "sideEffects":"Nausea, rash.",
+        "age":"12+ years",
+        "precautions":"Avoid overdose and alcohol."
+    },
+    {
+        "name":"Crocin",
+        "uses":"Reduces fever and pain.",
+        "dosage":"500 mg every 6 hours.",
+        "sideEffects":"Dizziness.",
+        "age":"12+ years",
+        "precautions":"Do not combine with other paracetamol medicines."
+    },
+    {
+        "name":"Dolo 650",
+        "uses":"Fever and body pain.",
+        "dosage":"650 mg every 6-8 hours.",
+        "sideEffects":"Nausea.",
+        "age":"Adults",
+        "precautions":"Avoid overdose."
+    },
+    {
+        "name":"Cetirizine",
+        "uses":"Treats allergies.",
+        "dosage":"10 mg once daily.",
+        "sideEffects":"Sleepiness.",
+        "age":"Above 6 years.",
+        "precautions":"Avoid driving after taking."
+    },
+    {
+        "name":"Amoxicillin",
+        "uses":"Treats bacterial infections.",
+        "dosage":"500 mg three times daily.",
+        "sideEffects":"Diarrhea.",
+        "age":"Doctor's advice.",
+        "precautions":"Complete the full course."
+    }
+]
