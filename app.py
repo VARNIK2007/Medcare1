@@ -1,40 +1,47 @@
 from flask import Flask, render_template, request, jsonify
 import json
-import os
 
 app = Flask(__name__)
 
-# Load medicine data once
-with open("medicines.json", "r", encoding="utf-8") as f:
-    medicines = json.load(f)
+# Load medicine data
+with open("medicines.json", "r", encoding="utf-8") as file:
+    medicines = json.load(file)
 
 
-# Home page route
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# API: Search medicine
-@app.route("/search", methods=["GET"])
-def search_medicine():
-    query = request.args.get("q", "").lower()
+@app.route("/search")
+def search():
+    query = request.args.get("q", "").strip().lower()
+
+    if not query:
+        return jsonify([])
 
     results = []
 
-    for med in medicines:
-        if query in med["name"].lower():
-            results.append(med)
+    for medicine in medicines:
+        searchable_text = " ".join([
+            medicine["name"],
+            medicine["uses"],
+            medicine["dosage"],
+            medicine["sideEffects"],
+            medicine["age"],
+            medicine["precautions"]
+        ]).lower()
+
+        if query in searchable_text:
+            results.append(medicine)
 
     return jsonify(results)
 
 
-# API: Get all medicines (optional)
 @app.route("/medicines")
-def get_all_medicines():
+def get_all():
     return jsonify(medicines)
 
 
-# Run server
 if __name__ == "__main__":
     app.run(debug=True)
