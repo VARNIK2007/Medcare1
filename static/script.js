@@ -1,185 +1,186 @@
-// Load medicines from JSON
-let medicines = [];
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
+const resultsContainer = document.getElementById("results");
+const loading = document.getElementById("loading");
+const resultCount = document.getElementById("resultCount");
 
-fetch("medicines.json")
-.then(response => response.json())
-.then(data => {
-    medicines = data;
-})
-.catch(error => {
-    console.error("Error loading medicines:", error);
-});
+// Search when form is submitted
+searchForm.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-// Elements
-const chatBox = document.getElementById("chat-box");
-const input = document.getElementById("userInput");
-const send = document.getElementById("sendBtn");
+    const query = searchInput.value.trim();
 
-// Search button
-send.onclick = searchMedicine;
-
-// Enter key support
-input.addEventListener("keypress", function(e){
-    if(e.key === "Enter"){
-        searchMedicine();
+    if (query === "") {
+        showMessage("Please enter a medicine name or symptom.");
+        return;
     }
+
+    searchMedicine(query);
 });
 
-// Main Search Function
-function searchMedicine(){
+// Search API
+async function searchMedicine(query) {
 
-    let text = input.value.trim();
+    resultsContainer.innerHTML = "";
+    resultCount.textContent = "";
 
-    if(text === "") return;
+    loading.classList.remove("hidden");
 
-    // User Message
-    chatBox.innerHTML += `
-    <div class="user-message">
-        ${text}
-    </div>
-    `;
+    try {
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+        const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+        const medicines = await response.json();
 
-    // Search Medicine
-    let found = medicines.find(
-        medicine => medicine.name.toLowerCase() === text.toLowerCase()
-    );
+        loading.classList.add("hidden");
 
-    setTimeout(()=>{
+        if (medicines.length === 0) {
 
-        if(found){
-
-            chatBox.innerHTML += `
-            <div class="bot-message">
-
-            <h2>💊 ${found.name}</h2>
-
-            <p><b>Uses:</b><br>${found.uses}</p>
-
-            <p><b>Dosage:</b><br>${found.dosage}</p>
-
-            <p><b>Side Effects:</b><br>${found.sideEffects}</p>
-
-            <p><b>Age:</b><br>${found.age}</p>
-
-            <p><b>Precautions:</b><br>${found.precautions}</p>
-
-            </div>
-            `;
-
-        }else{
-
-            // Suggestions
-            let suggestions = medicines.filter(medicine =>
-                medicine.name.toLowerCase().includes(text.toLowerCase())
-            );
-
-            // If nothing matches, search using first letter
-            if(suggestions.length === 0){
-
-                suggestions = medicines.filter(medicine =>
-                    medicine.name.toLowerCase().startsWith(text[0].toLowerCase())
-                );
-
-            }
-
-            if(suggestions.length > 0){
-
-                let html = `
-                <div class="bot-message">
-
-                ❌ <b>Medicine not found.</b>
-
-                <br><br>
-
-                Did you mean one of these?
-
-                <ul style="margin-top:10px;">
-                `;
-
-                suggestions.forEach(medicine=>{
-
-                    html += `
-                    <li
-                    onclick="fillMedicine('${medicine.name}')"
-                    style="
-                    cursor:pointer;
-                    color:#1565c0;
-                    margin:10px 0;
-                    font-weight:bold;">
-                    💊 ${medicine.name}
-                    </li>
-                    `;
-
-                });
-
-                html += `
-                </ul>
-
-                <small>
-                Click any medicine name to search automatically.
-                </small>
-
-                </div>
-                `;
-
-                chatBox.innerHTML += html;
-
-            }else{
-
-                chatBox.innerHTML += `
-                <div class="bot-message">
-
-                ❌ Sorry!
-
-                <br><br>
-
-                I couldn't find that medicine.
-
-                <br><br>
-
-                Please check the spelling.
-
-                </div>
-                `;
-
-            }
+            showNoResults(query);
+            return;
 
         }
 
-        chatBox.scrollTop = chatBox.scrollHeight;
+        resultCount.textContent = `${medicines.length} medicine(s) found`;
 
-    },700);
+        medicines.forEach(medicine => {
 
-    input.value="";
+            const card = document.createElement("div");
+
+            card.className = "card";
+
+            card.innerHTML = `
+
+                <div class="badge">Medicine Information</div>
+
+                <h2>💊 ${medicine.name}</h2>
+
+                <p>
+                    <strong>Uses</strong><br>
+                    ${medicine.uses}
+                </p>
+
+                <p>
+                    <strong>Dosage</strong><br>
+                    ${medicine.dosage}
+                </p>
+
+                <p>
+                    <strong>Side Effects</strong><br>
+                    ${medicine.sideEffects}
+                </p>
+
+                <p>
+                    <strong>Age Group</strong><br>
+                    ${medicine.age}
+                </p>
+
+                <p>
+                    <strong>Precautions</strong><br>
+                    ${medicine.precautions}
+                </p>
+
+            `;
+
+            resultsContainer.appendChild(card);
+
+        });
+
+    } catch (error) {
+
+        loading.classList.add("hidden");
+
+        showMessage("Unable to connect to the server.");
+
+        console.error(error);
+
+    }
 
 }
 
-// Click suggestion
-function fillMedicine(name){
+// No Results
+function showNoResults(query) {
 
-    input.value = name;
+    resultsContainer.innerHTML = `
 
-    searchMedicine();
+        <div class="no-result">
 
-}
+            <h2>❌ No Medicine Found</h2>
 
-// Image Upload
-document.getElementById("imageUpload").addEventListener("change",function(){
+            <p>
 
-    chatBox.innerHTML += `
-    <div class="bot-message">
+                We couldn't find any medicine related to
 
-    📷 Image uploaded successfully.
+                <span class="highlight">"${query}"</span>.
 
-    <br><br>
+            </p>
 
-    🔍 Medicine recognition will be added in the next version.
+            <br>
 
-    </div>
+            <p>
+
+                Try searching using:
+
+                <br><br>
+
+                ✔ Medicine Name
+
+                <br>
+
+                ✔ Fever
+
+                <br>
+
+                ✔ Pain
+
+                <br>
+
+                ✔ Allergy
+
+                <br>
+
+                ✔ Infection
+
+            </p>
+
+        </div>
+
     `;
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// General Message
+function showMessage(message) {
+
+    resultsContainer.innerHTML = `
+
+        <div class="no-result">
+
+            <h2>ℹ️ Information</h2>
+
+            <p>${message}</p>
+
+        </div>
+
+    `;
+
+}
+
+// Press "/" to focus search box
+document.addEventListener("keydown", function (event) {
+
+    if (event.key === "/") {
+
+        event.preventDefault();
+
+        searchInput.focus();
+
+    }
 
 });
+
+// Auto focus when page loads
+window.onload = () => {
+
+    searchInput.focus();
+
+};
